@@ -48,3 +48,4 @@ state.json
 
 # Thumbnails
 ._*
+.claude/
