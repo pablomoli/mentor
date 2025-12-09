@@ -92,9 +92,12 @@ class MentorState:
 
         self.concepts[concept.name] = concept
 
-    def get_top_gaps(self, n: int = 5) -> list[Concept]:
+    def get_top_gaps(self, n: int = 5, threshold: float = None) -> list[Concept]:
         """Return top N concepts by priority that are still gaps."""
-        gaps = [c for c in self.concepts.values() if c.score < 0.6]
+        from config import CONCEPT_SCORE_THRESHOLD
+        if threshold is None:
+            threshold = CONCEPT_SCORE_THRESHOLD
+        gaps = [c for c in self.concepts.values() if c.score < threshold]
         return sorted(gaps, key=lambda c: c.priority, reverse=True)[:n]
 
     def mark_surfaced(self, concept_name: str) -> None:

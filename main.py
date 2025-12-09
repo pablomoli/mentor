@@ -27,7 +27,7 @@ from config import (
 )
 from state import MentorState
 from watcher import NoteWatcher
-from analyzer import extract_concepts, generate_mentor_prompt
+from analyzer import analyze_note
 
 
 class Mentor:
@@ -92,8 +92,8 @@ class Mentor:
         print(f"\n[mentor] Analyzing: {file_path.name}")
         print("-" * 50)
 
-        # Extract concepts
-        concepts = extract_concepts(content, str(file_path))
+        # Run full analysis pipeline (extract concepts + generate prompts for gaps)
+        concepts, gap_prompts = analyze_note(content, str(file_path))
 
         if not concepts:
             print("[mentor] No concepts extracted")
@@ -116,18 +116,14 @@ class Mentor:
                 f"complexity={c.complexity_signal}, entropy_delta={entropy}"
             )
 
-        # Get top gaps and generate prompts
-        gaps = self.state.get_top_gaps(n=3)
-
-        if gaps:
+        # Display gap prompts
+        if gap_prompts:
             print(f"\n[mentor] Top gaps to address:")
-            for gap in gaps:
+            for gap, prompt, prompt_type_hint in gap_prompts:
                 print(f"\n  {gap.name} (score: {gap.score:.1f})")
                 print(f"     Coverage: {gap.current_coverage[:100]}...")
-
-                # Generate mentor prompt
-                prompt = generate_mentor_prompt(gap)
                 print(f"\n     {prompt}")
+                print(f"        [style: {prompt_type_hint[:30]}...]")
 
                 # Mark as surfaced
                 self.state.mark_surfaced(gap.name)
